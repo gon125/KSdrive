@@ -8,28 +8,12 @@ struct client_if{
 	char pswd[100];
 };
 
-void sign_in(); //sign up
+void sign_up(); //sign up
 int check(char*); //check id already exist 
 int log_in(); //log in
 
-void main(int argc, char argv[]){
-	int a=0;// 0 : sign in    1 : log in
-	char* fname = "client.txt";
-	FILE* f;
-	/*
-	get a
-	*/
 
-	if(a==0) {
-		sign_in();
-	}
-	else {
-		log_in();
-
-	}
-}
-
-void sign_in(){
+void sign_up(){
 	int ch=0;
 	char* fname="client.txt";
 	char* id="bbbb";

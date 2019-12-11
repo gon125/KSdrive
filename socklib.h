@@ -7,6 +7,9 @@
 #include <netdb.h>
 #include <time.h>
 #include <string.h>
+#include <stdlib.h>
+#include <inttypes.h>
+#include <arpa/inet.h>
 
 int make_server_socket(int);
 int make_server_socket_q(int, int);

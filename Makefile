@@ -5,7 +5,7 @@ CLIENTNAME = client
 RM = rm -f
 
 $(SERVERNAME): server.c socklib.o
-	gcc -o $(SERVERNAME) $(SERVERNAME).c socklib.o
+	gcc -o $(SERVERNAME) $(SERVERNAME).c socklib.o -lpthread
 
 $(CLIENTNAME): $(CLIENTNAME).c socklib.o
 	gcc -o $(CLIENTNAME) $(CLIENTNAME).c socklib.o

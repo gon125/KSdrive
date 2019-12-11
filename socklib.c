@@ -40,7 +40,7 @@ int connect_to_server(char* host, int portnum) {
 
 	bzero(&servadd, sizeof(servadd));
 
-	servadd.sin_addr.s_addr = inet_addr("127.0.0.1");
+	servadd.sin_addr.s_addr = inet_addr("192.168.43.236");
 	servadd.sin_port = htons(13000);
 	servadd.sin_family = AF_INET;
 	if (connect(sock, (struct sockaddr*)&servadd, sizeof(servadd)) != 0)

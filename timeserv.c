@@ -1,4 +1,5 @@
 #include "socklib.h"
+#include <stdlib.h>
 #define PORTNUM 13000
 #define HOSTLEN 256
 #define oops(msg) {perror(msg); exit(1);}
@@ -12,15 +13,10 @@ void process_request(int fd) {
 	}
 }
 
-void child_waiter(int signum) {
-	while (waitpid(-1, NULL, WNOHANG) > 0) ;
-}
-
 int main(int argc, char* argv[]) {
 	int sock, fd;
 
-	signal(SIGCHLD, child_waiter);
-	if((sock = make_server_socket(port)) == -1)
+	if((sock = make_server_socket(PORTNUM)) == -1)
 		oops("make_server_socket");
 	
 	while (1) {

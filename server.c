@@ -12,12 +12,19 @@ int server_bytes_sent;
 void* handle_call(void* fdptr);
 void setup(pthread_attr_t* attrp);
 
-void process_rq(char request[], int fd) {
-	if (fork() == 0) {
-		dup2(fd, 1);
-		close(fd);
-		execlp("date", "date", NULL);
-		oops("execlp date");
+void process_rq(int request, int fd) {
+	switch(request){
+		case 0:
+			write(fd, "hello\n", 7);
+			break;
+		case 1:
+			if (fork() == 0) {
+				dup2(fd, 1);
+				close(fd);
+				execlp("date", "date", NULL);
+				oops("execlp date");
+			}
+			break;
 	}
 }
 
@@ -39,7 +46,9 @@ int main(int argc, char* argv[]) {
 		
 		fdptr = malloc(sizeof(int));
 		*fdptr = fd;
+		printf("server requests %d\n",server_requests);
 		pthread_create(&worker, &attr, handle_call, fdptr);
+
 	}
 }
 
@@ -58,16 +67,17 @@ void* handle_call(void* fdptr)
 	FILE* fpin;
 	char request[BUFSIZ];
 	int fd;
-
+	
 	fd = *(int*)fdptr;
 	free(fdptr);
 	
 	fpin = fdopen(fd, "r");
-	//fgets(request, BUFSIZ, fpin);
-	strcpy(request,"hello");
-	printf("got a call on %d: request = %s",fd ,request);
+	fgets(request, BUFSIZ, fpin);
+	
+	printf("got a call on %d: request = %s\n",fd ,request);
 
-	process_rq(request, fd);
+	int rq = atoi(request);
+	process_rq(rq, fd);
 	fclose(fpin);
 
 	return NULL;

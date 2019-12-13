@@ -104,10 +104,7 @@ int log_in(){
 	fclose(f);
 	return -1;
 }
-void main(){
-	sign_up();
-	log_in();
-}
+
 /*
 void do_cat(char* f, int fd){
 	char* extension = file_type(f);

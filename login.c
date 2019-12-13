@@ -2,6 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <fcntl.h>
 
 struct client_if{
 	char id[100];
@@ -15,6 +16,7 @@ int log_in(); //log in
 
 void sign_up(){
 	int ch=0;
+	int s;
 	char* fname="client.txt";
 	char* id="bbbb";
 	char* pw="password";
@@ -33,7 +35,18 @@ void sign_up(){
 	if ((f=fopen(fname,"a"))==NULL){
 		printf("fopen err"); exit(0);
 	}
+
+
+	//??? is it right?
+	s = fcntl(f, F_GETFL);
+	s |=O_APPEND;
+	result = fcntl(f,F_SETFL,s);
+	if(result == -1)
+		perror("Setting APPEND");
+	else
+		write(f,&rec,l);
 	
+
 	fwrite(&client,sizeof(struct client_if),1,f);
 
 	fclose(f);
@@ -92,4 +105,30 @@ int log_in(){
 	printf("로그인 실패\n");
 	fclose(f);
 	return -1;
+}
+
+oid do_cat(char* f, int fd){
+	char* extension = file_type(f);
+	char* type = "text/plain"';
+	FILE* fpsoc,*fpfile;
+	int c;
+	int bytes = 0;
+
+	if(strcmp(extension,"html")==0) type = "tex/html";
+	else if(strcmp(extension, "gif")==0) type = "image/gif";
+	else if(strcmp(extension, "jpg")==0) type = "image/jpg";
+	else if(strcmp(extension, "jpeg")==0) type = "image/jpeg";
+
+	fpsock = fdopen(fd,"w");
+	fpfile = fopen(fd,"r");
+	if(fpsock != NULL&& fpfile!=NULL){
+		bytes = http_reply(fd,&fpsock,200,"OK",type,NULL);
+		while((c=getc(fpfile))!EOF){
+			putc(c,fpscok);
+			bytes++;
+		}
+		fclose(fpsock);
+		fclose(fpfile);
+	}
+	server_bytes_sent +=bytes;
 }

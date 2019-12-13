@@ -12,20 +12,25 @@ int server_bytes_sent;
 void* handle_call(void* fdptr);
 void setup(pthread_attr_t* attrp);
 
-void process_rq(int request, int fd) {
+void process_rq(int request, FILE* fin, int fd) {
+	FILE *fout;
+ 	char id[100], pwd[100];	
+
+	fout = fdopen(fd, "w");
+
+	printf("%d\n",request);
+
 	switch(request){
-		case 0:
-			write(fd, "hello\n", 7);
+		case SIGNUP :
+			fscanf(fin, "%s %s",id, pwd);
+			printf("%s %s\n",id ,pwd);
+			fprintf(fout, "%d\n",1);
+			
 			break;
-		case 1:
-			if (fork() == 0) {
-				dup2(fd, 1);
-				close(fd);
-				execlp("date", "date", NULL);
-				oops("execlp date");
-			}
+		case LOGIN :
 			break;
 	}
+	fclose(fout);
 }
 
 int main(int argc, char* argv[]) {
@@ -65,19 +70,18 @@ void setup(pthread_attr_t* attrp)
 void* handle_call(void* fdptr)
 {
 	FILE* fpin;
-	char request[BUFSIZ];
+	int rq = 0;
 	int fd;
 	
 	fd = *(int*)fdptr;
 	free(fdptr);
 	
 	fpin = fdopen(fd, "r");
-	fgets(request, BUFSIZ, fpin);
+	fscanf(fpin, "%d",&rq);
 	
-	printf("got a call on %d: request = %s\n",fd ,request);
+	printf("got a call on %d: request = %d\n",fd ,rq);
 
-	int rq = atoi(request);
-	process_rq(rq, fd);
+	process_rq(rq, fpin, fd);
 	fclose(fpin);
 
 	return NULL;

@@ -114,13 +114,14 @@ int signup(int fd) {
     prompt(SIGNUP);
     printf("id: ");
      id = getUserInput();
-    printf("\npassword: ");
+    printf("password: ");
      pwd = getUserInput();
     
     if ((fout = fdopen(fd, "w")) == NULL) {perror("signup fdopen"); exit(1);}
     if ((fin = fdopen(fd, "r")) == NULL) {perror("signup fdopen"); exit(1);}
     
     fprintf(fout, "%d %s %s\n", SIGNUP, id, pwd);
+    fflush(fout);
     fscanf(fin, "%d", &signUpSuccess);
     
     if (signUpSuccess) {
@@ -128,6 +129,8 @@ int signup(int fd) {
     } else {
         printf("signUp Failed\n");
     }
+    fclose(fout);
+    fclose(fin);
     
     return signUpSuccess;
 }
@@ -138,16 +141,17 @@ int loginS(int fd) {
     int loginSuccess = 0;
     FILE* fin, *fout;
     
-    prompt(SIGNUP);
+    prompt(LOGIN);
     printf("id: ");
      id = getUserInput();
-    printf("\npassword: ");
+    printf("password: ");
      pwd = getUserInput();
     
     if ((fout = fdopen(fd, "w")) == NULL) {perror("login fdopen"); exit(1);}
     if ((fin = fdopen(fd, "r")) == NULL) {perror("login fdopen"); exit(1);}
     
-    fprintf(fout, "%d %s %s\n", SIGNUP, id, pwd);
+    fprintf(fout, "%d %s %s\n", LOGIN, id, pwd);
+    fflush(fout);
     fscanf(fin, "%d", &loginSuccess);
     
     if (loginSuccess) {
@@ -155,12 +159,46 @@ int loginS(int fd) {
     } else {
         printf("login Failed\n");
     }
-    
+    fclose(fout);
+    fclose(fin);
     return loginSuccess;
 }
+
 void save(int fd) {
+    char* fileName;
+    int loginSuccess = 0;
+    int c;
+    FILE* fin, *fout, *file;
+       
+    prompt(SAVE);
+
+    printf("file name:\n");
+    fileName = getUserInput();
     
+       
+    if ((file = fopen(fileName, "r")) == NULL) {perror("save fopen"); exit(1);}
+    
+    if ((fout = fdopen(fd, "w")) == NULL) {perror("save fdopen"); exit(1);}
+    if ((fin = fdopen(fd, "r")) == NULL) {perror("save fdopen"); exit(1);}
+    fprintf(fout, "%d ", SAVE);
+    
+    if(fout!=NULL && file!=NULL){
+        while((c=getc(file))!=EOF){
+            putc(c,fout);
+        }
+        fclose(fout);
+        fclose(file);
+    }
+       
+    if (loginSuccess) {
+        printf("login Success\n");
+    } else {
+        printf("login Failed\n");
+    }
+    fclose(fout);
+    fclose(fin);
 }
+
 void load(int fd) {
     
 }

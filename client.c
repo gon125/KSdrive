@@ -62,8 +62,7 @@ int typeOf(char* input, int promptType) {
                     type = SIGNUP;
                     break;
                 default:
-                    perror("typeOf : default type error");
-                    exit(1);
+                    perror("typeOf : type error");
                     break;
             }
         break;
@@ -86,7 +85,6 @@ int typeOf(char* input, int promptType) {
                     break;
                 default:
                     perror("typeOf : menu type error");
-                    exit(1);
                 break;
             }
          break;
@@ -240,7 +238,7 @@ void save(int fd) {
     printf("file name:\n");
     fileName = getUserInput();
     
-    if ((file = fopen(fileName, "r")) == NULL) {perror("save fopen"); exit(1);}
+    if ((file = fopen(fileName, "r")) == NULL) {perror("save fopen"); return;}
     if ((fout = fdopen(fd, "w")) == NULL) {perror("save fdopen"); exit(1);}
     if ((fin = fdopen(fd, "r")) == NULL) {perror("save fdopen"); exit(1);}
     

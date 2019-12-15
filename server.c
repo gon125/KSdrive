@@ -146,7 +146,7 @@ int process_rq(int fd) {
 				}
 
 				fclose(f);
-				fprintf(fout, "%d",1);
+				
 				break;
 			case DELETE:
 				fscanf(fin,"%s",fname);

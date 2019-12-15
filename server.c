@@ -106,6 +106,7 @@ int process_rq(int fd) {
 
 				if((f = fopen(str,"r"))==NULL){
 					fprintf(fout, "%d",0); // dir에 파일이 존재하지 않을 때
+					break;
 				}else {
 					fprintf(fout, "%d",1); // dir에 파일이 존재할 때
 				} 

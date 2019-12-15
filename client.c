@@ -354,7 +354,6 @@ void del(int fd) {
     }
     fclose(fout);
     fclose(fin);
-    return deleteSuccess;
 }
 
 int logoutS(int fd) {

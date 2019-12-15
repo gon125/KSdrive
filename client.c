@@ -120,7 +120,7 @@ int signup(int fd) {
     if ((fout = fdopen(fd, "w")) == NULL) {perror("signup fdopen"); exit(1);}
     if ((fin = fdopen(fd, "r")) == NULL) {perror("signup fdopen"); exit(1);}
     
-    fprintf(fout, "%d %s %s\n", SIGNUP, id, pwd);
+    fprintf(fout, "%d %s %s ", SIGNUP, id, pwd);
     fflush(fout);
     fscanf(fin, "%d", &signUpSuccess);
     
@@ -129,7 +129,11 @@ int signup(int fd) {
     } else {
         printf("signUp Failed\n");
     }
+    
+    fflush(fout);
     fclose(fout);
+    
+    
     fclose(fin);
     
     return signUpSuccess;
@@ -150,7 +154,7 @@ int loginS(int fd) {
     if ((fout = fdopen(fd, "w")) == NULL) {perror("login fdopen"); exit(1);}
     if ((fin = fdopen(fd, "r")) == NULL) {perror("login fdopen"); exit(1);}
     
-    fprintf(fout, "%d %s %s\n", LOGIN, id, pwd);
+    fprintf(fout, "%d %s %s ", LOGIN, id, pwd);
     fflush(fout);
     fscanf(fin, "%d", &loginSuccess);
     
@@ -183,6 +187,7 @@ void save(int fd) {
     if(fout!=NULL && file!=NULL){
         while((c=fgetc(file))!= EOF){
             fputc(c,fout);
+            fputc(c,stdout);
         }
         fprintf(fout, "\r\n");
         fflush(fout);
@@ -202,6 +207,7 @@ void save(int fd) {
 
 void load(int fd) {
     char* fileName;
+    int fileExist = 0;
     int loadSuccess = 0;
     int c;
     FILE* fin, *fout, *file;
@@ -216,10 +222,22 @@ void load(int fd) {
     if ((fout = fdopen(fd, "w")) == NULL) {perror("load fdopen"); exit(1);}
     if ((fin = fdopen(fd, "r")) == NULL) {perror("load fdopen"); exit(1);}
     
-    fprintf(fout, "%d %s\n", LOAD, fileName);
+    fprintf(fout, "%d %s ", LOAD, fileName);
+    
+    fscanf(fin, "%d", &fileExist);
+    
+    if (!fileExist) {
+        printf("file not exist on server. : %s\n", fileName);
+        return;
+    }
     
     if(fin!=NULL && file!=NULL){
         while((c=getc(fin))!=EOF){
+            if (c == '\r') {
+                if ((c=getc(fin)) == '\n') {
+                    break;
+                }
+            }
             putc(c,file);
         }
         fclose(fin);
@@ -276,7 +294,7 @@ int logoutS(int fd) {
     if ((fout = fdopen(fd, "w")) == NULL) {perror("logout fdopen"); exit(1);}
     if ((fin = fdopen(fd, "r")) == NULL) {perror("logout fdopen"); exit(1);}
     
-    fprintf(fout, "%d\n", LOGOUT);
+    fprintf(fout, "%d", LOGOUT);
     fflush(fout);
     fscanf(fin, "%d", &logoutSuccess);
     

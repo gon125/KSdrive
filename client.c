@@ -1,7 +1,11 @@
 #include "socklib.h"
 #include <stdio.h>
+#include <termios.h>
+#include <fcntl.h>
+
 #define oops(msg) {perror(msg);exit(1);}
 #define MAX_STRING 100
+
 
 void prompt(int type) {
     
@@ -105,18 +109,19 @@ char* getUserInput() {
 }
 
 void tty_mode(int how){
-	static sgruct termios original_mode;
+	static struct termios original_mode;
 	static int original_flags;
 	if(how ==0){
 		tcgetattr(0,&original_mode);
-		original_flags;
+		original_flags = fcntl(0, F_GETFL);
 	}
 	else{
 		tcsetattr(0,TCSANOW,&original_mode);
 		fcntl(0,F_SETFL,original_flags);
 	}
 }
-int set_cr_noecho_mode(){
+
+void set_cr_noecho_mode(){
 	struct termios ttystate;
 	tcgetattr(0,&ttystate);
 	ttystate.c_lflag &=~ICANON;
@@ -130,18 +135,25 @@ char* getUserPassword() {
 	set_cr_noecho_mode();
     char* input = (char*)malloc(sizeof(char)*MAX_STRING);
     int i=0;
-	char c;
+	int c;
+    
+    getc(stdin);
 	for(i=0;i<MAX_STRING;i++){
 		c=getc(stdin);
-		if(c=='\n')break;
+        if(c=='\n') {
+            if (i == 0) {
+                perror("\n front");
+                exit(1);
+            }
+            break;
+        }
 		input[i]=c;
 		printf("*");
 	}
 	input[i]='\0';
     if (i == MAX_STRING) { perror("input_max overflow"); exit(1);}
-    //
-    
 	tty_mode(1);
+    printf("\n");
     return input;
 }
 
@@ -156,7 +168,7 @@ int signup(int fd) {
     printf("id: ");
      id = getUserInput();
     printf("password: ");
-     pwd = getUserInput();
+     pwd = getUserPassword();
     
     if ((fout = fdopen(fd, "w")) == NULL) {perror("signup fdopen"); exit(1);}
     if ((fin = fdopen(fd, "r")) == NULL) {perror("signup fdopen"); exit(1);}
@@ -190,7 +202,7 @@ int loginS(int fd) {
     printf("id: ");
      id = getUserInput();
     printf("password: ");
-     pwd = getUserInput();
+     pwd = getUserPassword();
     
     if ((fout = fdopen(fd, "w")) == NULL) {perror("login fdopen"); exit(1);}
     if ((fin = fdopen(fd, "r")) == NULL) {perror("login fdopen"); exit(1);}

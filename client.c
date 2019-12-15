@@ -335,7 +335,26 @@ void ls(int fd) {
     fclose(fin);
 }
 void del(int fd) {
+    int deleteSuccess = 0;
+    FILE* fin, *fout;
     
+    prompt(DELETE);
+    
+    if ((fout = fdopen(fd, "w")) == NULL) {perror("logout fdopen"); exit(1);}
+    if ((fin = fdopen(fd, "r")) == NULL) {perror("logout fdopen"); exit(1);}
+    
+    fprintf(fout, "%d", DELETE);
+    fflush(fout);
+    fscanf(fin, "%d", &deleteSuccess);
+    
+    if (deleteSuccess) {
+        printf("delete Success\n");
+    } else {
+        printf("delete Failed\n");
+    }
+    fclose(fout);
+    fclose(fin);
+    return deleteSuccess;
 }
 
 int logoutS(int fd) {

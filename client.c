@@ -104,13 +104,44 @@ char* getUserInput() {
     return input;
 }
 
+void tty_mode(int how){
+	static sgruct termios original_mode;
+	static int original_flags;
+	if(how ==0){
+		tcgetattr(0,&original_mode);
+		original_flags;
+	}
+	else{
+		tcsetattr(0,TCSANOW,&original_mode);
+		fcntl(0,F_SETFL,original_flags);
+	}
+}
+int set_cr_noecho_mode(){
+	struct termios ttystate;
+	tcgetattr(0,&ttystate);
+	ttystate.c_lflag &=~ICANON;
+	ttystate.c_lflag &= ~ECHO;
+	ttystate.c_cc[VMIN]=1;
+	tcsetattr(0,TCSANOW,&ttystate);
+}
+
 char* getUserPassword() {
+	tty_mode(0);
+	set_cr_noecho_mode();
     char* input = (char*)malloc(sizeof(char)*MAX_STRING);
-    int n;
-    n = scanf("%s", input);
-    if (n > MAX_STRING) { perror("input_max overflow"); exit(1);}
+    int i=0;
+	char c;
+	for(i=0;i<MAX_STRING;i++){
+		c=getc(stdin);
+		if(c=='\n')break;
+		input[i]=c;
+		printf("*");
+	}
+	input[i]='\0';
+    if (i == MAX_STRING) { perror("input_max overflow"); exit(1);}
     //
     
+	tty_mode(1);
     return input;
 }
 

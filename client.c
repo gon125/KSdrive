@@ -166,52 +166,108 @@ int loginS(int fd) {
 
 void save(int fd) {
     char* fileName;
-    int loginSuccess = 0;
+    int saveSuccess = 0;
     int c;
     FILE* fin, *fout, *file;
        
     prompt(SAVE);
-
     printf("file name:\n");
     fileName = getUserInput();
     
-       
     if ((file = fopen(fileName, "r")) == NULL) {perror("save fopen"); exit(1);}
-    
     if ((fout = fdopen(fd, "w")) == NULL) {perror("save fdopen"); exit(1);}
     if ((fin = fdopen(fd, "r")) == NULL) {perror("save fdopen"); exit(1);}
-    fprintf(fout, "%d ", SAVE);
+    
+    fprintf(fout, "%d %s ", SAVE, fileName);
     
     if(fout!=NULL && file!=NULL){
-        while((c=getc(file))!=EOF){
-            putc(c,fout);
+        while((c=fgetc(file))!= EOF){
+            fputc(c,fout);
         }
+        fprintf(fout, "\r\n");
+        fflush(fout);
         fclose(fout);
         fclose(file);
+        saveSuccess = 1;
     }
-       
-    if (loginSuccess) {
-        printf("login Success\n");
+
+    if (saveSuccess) {
+        printf("save Success\n");
     } else {
-        printf("login Failed\n");
+        printf("save Failed\n");
     }
     fclose(fout);
     fclose(fin);
 }
 
 void load(int fd) {
+    char* fileName;
+    int loadSuccess = 0;
+    int c;
+    FILE* fin, *fout, *file;
+       
+    prompt(LOAD);
+
+    printf("file name:\n");
+    fileName = getUserInput();
+       
+    if ((file = fopen(fileName, "w")) == NULL) {perror("load fopen"); exit(1);}
     
+    if ((fout = fdopen(fd, "w")) == NULL) {perror("load fdopen"); exit(1);}
+    if ((fin = fdopen(fd, "r")) == NULL) {perror("load fdopen"); exit(1);}
+    
+    fprintf(fout, "%d %s\n", LOAD, fileName);
+    
+    if(fin!=NULL && file!=NULL){
+        while((c=getc(fin))!=EOF){
+            putc(c,file);
+        }
+        fclose(fin);
+        fclose(file);
+        loadSuccess = 1;
+    }
+    
+    if (loadSuccess) {
+        printf("load Success\n");
+    } else {
+        printf("load Failed\n");
+    }
+    fclose(fout);
+    fclose(fin);
 }
 void ls(int fd) {
+    int lsSuccess = 0;
+    int c;
+    FILE* fin, *fout;
+       
+    prompt(LS);
     
+    if ((fout = fdopen(fd, "w")) == NULL) {perror("load fdopen"); exit(1);}
+    if ((fin = fdopen(fd, "r")) == NULL) {perror("load fdopen"); exit(1);}
+    
+    fprintf(fout, "%d", LS);
+    
+    if(fin!=NULL){
+        while((c=getc(fin))!=EOF){
+            putc(c,stdout);
+        }
+        fclose(fin);
+        
+        lsSuccess = 1;
+    }
+    if (lsSuccess) {
+        printf("load Success\n");
+    } else {
+        printf("load Failed\n");
+    }
+    fclose(fout);
+    fclose(fin);
 }
 void del(int fd) {
     
 }
 
 int logoutS(int fd) {
-    char* id;
-    char* pwd;
     int logoutSuccess = 0;
     FILE* fin, *fout;
     
@@ -235,10 +291,6 @@ int logoutS(int fd) {
 }
 
 void talk_with_server(int fd) {
-    char buf[BUFSIZ];
-    buf[0] = '1';
-    buf[1] = '\0';
-    int n;
     char* input;
     int type;
     // quit value
@@ -260,8 +312,6 @@ void talk_with_server(int fd) {
             break;
         }
     }
-    
-    
     
     //reset quit
     quit = 0;
@@ -310,4 +360,3 @@ int main(int argc, char* argv[]) {
     talk_with_server(fd);
     close(fd);
 }
-

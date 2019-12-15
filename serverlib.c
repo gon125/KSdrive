@@ -29,6 +29,7 @@ int sign_up(char *id, char *pw){
 	strcpy(client.id,id); // input id pw
 	strcpy(client.pswd,pw);
 
+
 	//write file
 	if ((fd=open(fname,O_RDWR|O_CREAT,0644))==-1){
 		printf("fopen err"); exit(0);
@@ -60,10 +61,10 @@ int check(char* id){//check id already exist -> exist 1 : not 0
 			return 0;
 		}
 	}
+
 	while(!feof(f)){
 		if (1 != fread(&client,sizeof(struct client_if),1,f)) {
 			perror("너여?");
-			exit(1);	
 		}
 		if(!strcmp(client.id,id)){
 			printf("이미 있는 아이디 입니다.\n");

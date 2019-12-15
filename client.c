@@ -104,6 +104,16 @@ char* getUserInput() {
     return input;
 }
 
+char* getUserPassword() {
+    char* input = (char*)malloc(sizeof(char)*MAX_STRING);
+    int n;
+    n = scanf("%s", input);
+    if (n > MAX_STRING) { perror("input_max overflow"); exit(1);}
+    //
+    
+    return input;
+}
+
 int signup(int fd) {
     //
     char* id;

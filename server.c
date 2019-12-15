@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <string.h>
 #define PORTNUM 13000
 #define HOSTLEN 256
 #define oops(msg) {perror(msg); exit(1);}
@@ -18,10 +19,14 @@ void* handle_call(void* fdptr);
 void setup(pthread_attr_t* attrp);
 
 int process_rq(int fd) {
- 	char id[100], pwd[100];	
+ 	char id[1000], pwd[1000], fname[1000], buf[1000];	
 	FILE* fin;
 	FILE* fout;
 	int rq = -1;
+
+	FILE* f;
+	int c = 0, i = 0;
+	char str[1000];
 
 	while(1){
 		fin = fdopen(dup(fd), "r");
@@ -31,48 +36,108 @@ int process_rq(int fd) {
 
 		printf("got a call on %d: request = %d\n",fd ,rq);
 		printf("%d\n",rq);
+		fflush(stdout);
 
 		switch(rq){
 			case SIGNUP :
 				fscanf(fin, "%s %s",id, pwd);
+				getc(fin);
 				
 				printf("%s %s\n",id ,pwd);
 				
 				if(sign_up(id,pwd) == 0){
-					fprintf(fout, "%d\n", 0); // sign up failed 같은 아이디 존재
+					fprintf(fout, "%d", 0); // sign up failed 같은 아이디 존재
 				}
 				else{
-					fprintf(fout, "%d\n",1); // sign up success
+					fprintf(fout, "%d",1); // sign up success
 				}
 				break;
 			case LOGIN :
-				/*
+				
 				fscanf(fin, "%s %s",id, pwd);
+				getc(fin);
 				printf("%s %s\n",id ,pwd);
 				if(log_in(id, pwd) == 0){
-					fprintf(fout, "%d\n", 0);
+					fprintf(fout, "%d", 0);
 				}
 				else{
-					fprintf(fout, "%d\n",1);
+					fprintf(fout, "%d",1);
 				}
-				*/
-				fscanf(fin, "%s %s",id, pwd);
-				
-				printf("%s %s\n",id ,pwd);
-				fprintf(fout, "%d\n",1);
-				fflush(fout);
 				break;
 			case LOGOUT :
-				fprintf(fout, "%d\n",1);
+				fprintf(fout, "%d",1);
+				server_requests--;
 				fclose(fout);
 				fclose(fin);
 				return 0;
 				break;
 			case LS:
 				break;
-		}
+			case LOAD:
 
+				fscanf(fin,"%s",fname);
+				printf("%s",fname);
+				c=getc(fin);
+				putc(c,stdout);
+				fflush(stdout);
+				sprintf(str,"./%s/%s",id,fname);
+
+				if((f = fopen(str,"r"))==NULL){
+					fprintf(fout, "%d",0); // dir에 파일이 존재하지 않을 때
+					printf("야\n");
+					fflush(stdout);
+					break;
+				}else {
+					fprintf(fout, "%d",1); // dir에 파일이 존재할 때
+					printf("임마\n");
+					fflush(stdout);
+				} 
+				printf("%s\n",str);
+				fflush(stdout);
+				
+				if(fout != NULL && f != NULL){
+					while((c=getc(f))!=EOF){
+						putc(c,fout);
+						putc(c,stdout);
+					}
+				}
+				
+				fclose(f);
+				break;
+			case SAVE:
+				fscanf(fin,"%s",fname);
+				getc(fin);
+				sprintf(str,"./%s/%s",id,fname);
+				
+				if((f = fopen(str,"w"))==NULL){
+					perror("save fopen");
+					exit(1);
+				}
+				printf("%s\n",str);
+
+				if(fin != NULL && f != NULL){
+					while(c=getc(fin)){
+						if (c == '\r') {
+							if ((c =getc(fin)) == '\n') {
+								break;
+							}
+						}
+						putc(c,f);
+						fflush(f);
+					}
+				}
+
+				fclose(f);
+				fprintf(fout, "%d",1);
+				break;
+			case DELETE:
+				break;
+		}
+		fprintf(fout,"\r\n");
+		fflush(fout);
 		fclose(fout);
+
+
 		fclose(fin);
 	}
 	return 1;

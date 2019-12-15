@@ -9,62 +9,60 @@ struct client_if{
 	char pswd[100];
 };
 
-void sign_up(); //sign up
+int sign_up(char*, char*); //sign up
 int check(char*); //check id already exist 
-int log_in(); //log in
+int log_in(char*, char*); //log in
 
-
-void sign_up(){
+int sign_up(char *id, char *pw){
 	int ch=0;
-	int s;
+	int fd;
+	int flag;
 	char* fname="client.txt";
-	char* id="bbbb";
-	char* pw="password";
 	FILE* f;
-    struct client_if client;
+   	struct client_if client;
 	/*
 	get id pswd
 	*/
 	
-	if(check(id)==1)exit(0); // check id already exist 
+	if(check(id)==1) return 0; // check id already exist 
 
 	strcpy(client.id,id); // input id pw
 	strcpy(client.pswd,pw);
 
 	//write file
-	if ((f=fopen(fname,"a"))==NULL){
+	if ((fd=open(fname,O_RDWR|O_CREAT,0644))==-1){
 		printf("fopen err"); exit(0);
 	}
+	if((flag=fcntl(fd,F_GETFL))==-1){
+		perror("fcntlfailed");
+		exit(1);
+	}
+	flag |=O_APPEND;
+	if ((fcntl(fd, F_SETFL, flag)) == -1) {
+	    perror("fcntl failed");
+	    exit(1);
+	}
+	write(fd,(struct client_if*)&client,sizeof(client));
 
-
-	//??? is it right?
-	s = fcntl(f, F_GETFL);
-	s |=O_APPEND;
-	result = fcntl(f,F_SETFL,s);
-	if(result == -1)
-		perror("Setting APPEND");
-	else
-		write(f,&rec,l);
-	
-
-	fwrite(&client,sizeof(struct client_if),1,f);
-
-	fclose(f);
+	close(fd);
+	return 1;
 }
 
 int check(char* id){//check id already exist -> exist 1 : not 0
-	int ch=-1;
+	int ch=0;
 	struct client_if client;
 	FILE* f;
 	char* fname="client.txt";
 	if ((f=fopen(fname,"r"))==NULL){
 		if((f=fopen(fname,"w"))==NULL){
 			return -1;
+		}else{
+			return 0;
 		}
 	}
 	while(!feof(f)){
 		if (1 != fread(&client,sizeof(struct client_if),1,f)) {
-			perror("");
+			perror("너여?");
 			exit(1);	
 		}
 		if(!strcmp(client.id,id)){
@@ -77,17 +75,11 @@ int check(char* id){//check id already exist -> exist 1 : not 0
 	return ch;
 }
 
-int log_in(){
+int log_in(char *id, char *pswd){
 	char* fname="client.txt";
-	char* id;
-	char* pswd;
 	FILE* f;
 	int c,i=0;
     struct client_if client,client2;
-	
-	/*
-	get id pswd
-	*/
 	
 	if ((f=fopen(fname,"r"))==NULL){
 		printf("fopen err"); exit(0);
@@ -104,13 +96,14 @@ int log_in(){
 	}
 	printf("로그인 실패\n");
 	fclose(f);
-	return -1;
+	return 0;
 }
 
-oid do_cat(char* f, int fd){
+/*
+void do_cat(char* f, int fd){
 	char* extension = file_type(f);
-	char* type = "text/plain"';
-	FILE* fpsoc,*fpfile;
+	char* type = "text/plain";
+	FILE* fpsock,*fpfile;
 	int c;
 	int bytes = 0;
 
@@ -123,12 +116,12 @@ oid do_cat(char* f, int fd){
 	fpfile = fopen(fd,"r");
 	if(fpsock != NULL&& fpfile!=NULL){
 		bytes = http_reply(fd,&fpsock,200,"OK",type,NULL);
-		while((c=getc(fpfile))!EOF){
-			putc(c,fpscok);
+		while((c=getc(fpfile))!=EOF){
+			putc(c,fpsock);
 			bytes++;
 		}
 		fclose(fpsock);
 		fclose(fpfile);
 	}
 	server_bytes_sent +=bytes;
-}
+}*/

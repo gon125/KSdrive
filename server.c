@@ -1,4 +1,5 @@
 #include "socklib.h"
+#include "serverlib.h"
 #include <stdlib.h>
 #include <pthread.h>
 #define PORTNUM 13000
@@ -23,11 +24,26 @@ void process_rq(int request, FILE* fin, int fd) {
 	switch(request){
 		case SIGNUP :
 			fscanf(fin, "%s %s",id, pwd);
-			printf("%s %s\n",id ,pwd);
-			fprintf(fout, "%d\n",1);
 			
+			printf("%s %s\n",id ,pwd);
+			if(sign_up(id,pwd) == 0){
+				printf("return 0?\n");
+				fprintf(fout, "%d\n", 0); // sign up failed 같은 아이디 존재
+			}
+			else{
+				printf("return 1?\n");
+				fprintf(fout, "%d\n",1); // sign up success
+			}
 			break;
 		case LOGIN :
+			fscanf(fin, "%s %s",id, pwd);
+			printf("%s %s\n",id ,pwd);
+			if(log_in(id, pwd) == 0){
+				fprintf(fout, "%d\n", 0);
+			}
+			else{
+				fprintf(fout, "%d\n",1);
+			}
 			break;
 	}
 	fclose(fout);

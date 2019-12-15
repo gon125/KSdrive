@@ -14,11 +14,9 @@ int check(char*); //check id already exist
 int log_in(char*, char*); //log in
 
 int sign_up(char *id, char *pw){
-	int ch=0;
 	int fd;
 	int flag;
 	char* fname="client.txt";
-	FILE* f;
    	struct client_if client;
 	/*
 	get id pswd
@@ -64,7 +62,7 @@ int check(char* id){//check id already exist -> exist 1 : not 0
 
 	while(!feof(f)){
 		if (1 != fread(&client,sizeof(struct client_if),1,f)) {
-			perror("너여?");
+		
 		}
 		if(!strcmp(client.id,id)){
 			printf("이미 있는 아이디 입니다.\n");
@@ -79,16 +77,14 @@ int check(char* id){//check id already exist -> exist 1 : not 0
 int log_in(char *id, char *pswd){
 	char* fname="client.txt";
 	FILE* f;
-	int c,i=0;
-    struct client_if client,client2;
+    struct client_if client;
 	
 	if ((f=fopen(fname,"r"))==NULL){
 		printf("fopen err"); exit(0);
 	}
 	while(!feof(f)){
 		if (1 != fread(&client,sizeof(struct client_if),1,f)) {
-			perror("");
-			exit(1);	
+		
 		}
 		if (!strcmp(id,client.id) && !strcmp(pswd,client.pswd)){
 			fclose(f);

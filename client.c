@@ -474,7 +474,11 @@ void talk_with_server(int fd) {
 
 int main(int argc, char* argv[]) {
     int fd;
-
+    if (argc != 2) {
+        fprintf(stderr, "put > client 192.168.43.236");
+        exit(1);
+    }
+    
     fd = connect_to_server(argv[1], 13000);
     if (fd == -1)    exit(1);
     talk_with_server(fd);

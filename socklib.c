@@ -12,8 +12,6 @@ int make_server_socket(int portnum) {
 
 int make_server_socket_q(int portnum, int backlog) {
 	struct 	sockaddr_in	saddr;
-	struct 	hostent*	hp;
-	char	hostname[HOSTLEN];
 	int	sock_id;
 
 	sock_id = socket(PF_INET, SOCK_STREAM, 0);
@@ -31,7 +29,7 @@ int make_server_socket_q(int portnum, int backlog) {
 	return sock_id;
 }
 
-int connect_to_server(char* host, int portnum) {
+int connect_to_server(char* ipAdress, int portnum) {
 	int sock;
 	struct sockaddr_in	servadd;
 
@@ -40,7 +38,7 @@ int connect_to_server(char* host, int portnum) {
 
 	bzero(&servadd, sizeof(servadd));
 
-	servadd.sin_addr.s_addr = inet_addr("192.168.43.236");
+	servadd.sin_addr.s_addr = inet_addr(ipAdress);
 	servadd.sin_port = htons(13000);
 	servadd.sin_family = AF_INET;
 	if (connect(sock, (struct sockaddr*)&servadd, sizeof(servadd)) != 0)

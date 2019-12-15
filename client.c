@@ -124,7 +124,6 @@ void tty_mode(int how){
 void set_cr_noecho_mode(){
 	struct termios ttystate;
 	tcgetattr(0,&ttystate);
-	ttystate.c_lflag &=~ICANON;
 	ttystate.c_lflag &= ~ECHO;
 	ttystate.c_cc[VMIN]=1;
 	tcsetattr(0,TCSANOW,&ttystate);
@@ -147,8 +146,9 @@ char* getUserPassword() {
             }
             break;
         }
-		input[i]=c;
-		printf("*");
+        input[i]=c;
+        printf("*");
+    
 	}
 	input[i]='\0';
     if (i == MAX_STRING) { perror("input_max overflow"); exit(1);}
@@ -276,6 +276,7 @@ void load(int fd) {
     if ((fin = fdopen(fd, "r")) == NULL) {perror("load fdopen"); exit(1);}
     
     fprintf(fout, "%d %s ", LOAD, fileName);
+    fflush(fout);
     
     fscanf(fin, "%d", &fileExist);
     
@@ -316,10 +317,16 @@ void ls(int fd) {
     if ((fout = fdopen(fd, "w")) == NULL) {perror("load fdopen"); exit(1);}
     if ((fin = fdopen(fd, "r")) == NULL) {perror("load fdopen"); exit(1);}
     
-    fprintf(fout, "%d", LS);
+    fprintf(fout, "%d ", LS);
+    fflush(fout);
     
     if(fin!=NULL){
         while((c=getc(fin))!=EOF){
+            if (c == '\r') {
+                if ((c=getc(fin)) == '\n') {
+                    break;
+                }
+            }
             putc(c,stdout);
         }
         fclose(fin);
@@ -327,9 +334,9 @@ void ls(int fd) {
         lsSuccess = 1;
     }
     if (lsSuccess) {
-        printf("load Success\n");
+        printf("ls Success\n");
     } else {
-        printf("load Failed\n");
+        printf("ls Failed\n");
     }
     fclose(fout);
     fclose(fin);
@@ -337,14 +344,18 @@ void ls(int fd) {
 void del(int fd) {
     int deleteSuccess = 0;
     FILE* fin, *fout;
+    char* fileName;
     
     prompt(DELETE);
     
     if ((fout = fdopen(fd, "w")) == NULL) {perror("logout fdopen"); exit(1);}
     if ((fin = fdopen(fd, "r")) == NULL) {perror("logout fdopen"); exit(1);}
     
-    fprintf(fout, "%d", DELETE);
+    printf("file name:\n");
+    fileName = getUserInput();
+    fprintf(fout, "%d %s ", DELETE, fileName);
     fflush(fout);
+    
     fscanf(fin, "%d", &deleteSuccess);
     
     if (deleteSuccess) {
@@ -365,7 +376,7 @@ int logoutS(int fd) {
     if ((fout = fdopen(fd, "w")) == NULL) {perror("logout fdopen"); exit(1);}
     if ((fin = fdopen(fd, "r")) == NULL) {perror("logout fdopen"); exit(1);}
     
-    fprintf(fout, "%d", LOGOUT);
+    fprintf(fout, "%d ", LOGOUT);
     fflush(fout);
     fscanf(fin, "%d", &logoutSuccess);
     

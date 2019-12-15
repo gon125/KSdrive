@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 struct client_if{
 	char id[100];
@@ -12,6 +14,7 @@ struct client_if{
 int sign_up(char*, char*); //sign up
 int check(char*); //check id already exist 
 int log_in(char*, char*); //log in
+void mkDir(char*);
 
 int sign_up(char *id, char *pw){
 	int fd;
@@ -44,6 +47,7 @@ int sign_up(char *id, char *pw){
 	write(fd,(struct client_if*)&client,sizeof(client));
 
 	close(fd);
+	mkDir(id);
 	return 1;
 }
 
@@ -96,29 +100,12 @@ int log_in(char *id, char *pswd){
 	return 0;
 }
 
-/*
-void do_cat(char* f, int fd){
-	char* extension = file_type(f);
-	char* type = "text/plain";
-	FILE* fpsock,*fpfile;
-	int c;
-	int bytes = 0;
-
-	if(strcmp(extension,"html")==0) type = "tex/html";
-	else if(strcmp(extension, "gif")==0) type = "image/gif";
-	else if(strcmp(extension, "jpg")==0) type = "image/jpg";
-	else if(strcmp(extension, "jpeg")==0) type = "image/jpeg";
-
-	fpsock = fdopen(fd,"w");
-	fpfile = fopen(fd,"r");
-	if(fpsock != NULL&& fpfile!=NULL){
-		bytes = http_reply(fd,&fpsock,200,"OK",type,NULL);
-		while((c=getc(fpfile))!=EOF){
-			putc(c,fpsock);
-			bytes++;
-		}
-		fclose(fpsock);
-		fclose(fpfile);
-	}
-	server_bytes_sent +=bytes;
-}*/
+void mkDir( char* id ){
+		int nResult = mkdir( id,0755 );
+			if( nResult == 0 ){
+				printf( "폴더 생성 성공" );
+			}
+			else if( nResult == -1 ){
+				perror( "폴더 생성 실패 - 폴더가 이미 있거나 부정확함\n" );
+			}
+}

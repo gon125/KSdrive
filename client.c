@@ -209,6 +209,31 @@ void del(int fd) {
     
 }
 
+int logoutS(int fd) {
+    char* id;
+    char* pwd;
+    int logoutSuccess = 0;
+    FILE* fin, *fout;
+    
+    prompt(LOGOUT);
+    
+    if ((fout = fdopen(fd, "w")) == NULL) {perror("logout fdopen"); exit(1);}
+    if ((fin = fdopen(fd, "r")) == NULL) {perror("logout fdopen"); exit(1);}
+    
+    fprintf(fout, "%d\n", LOGOUT);
+    fflush(fout);
+    fscanf(fin, "%d", &logoutSuccess);
+    
+    if (logoutSuccess) {
+        printf("logout Success\n");
+    } else {
+        printf("logout Failed\n");
+    }
+    fclose(fout);
+    fclose(fin);
+    return logoutSuccess;
+}
+
 void talk_with_server(int fd) {
     char buf[BUFSIZ];
     buf[0] = '1';
@@ -225,12 +250,13 @@ void talk_with_server(int fd) {
         // login fisrt
         switch (type) {
             case SIGNUP:
-                signup(fd);
-            break;
+                signup(dup(fd));
+                break;
             case LOGIN:
-                quit = loginS(fd);
+                quit = loginS(dup(fd));
+                break;
             default:
-                exit(1);
+                printf("try again. you put : %s", input);
             break;
         }
     }
@@ -239,7 +265,7 @@ void talk_with_server(int fd) {
     
     //reset quit
     quit = 0;
-     while (!quit) {
+    while (!quit) {
         // select menu
         prompt(MENU);
         input = getUserInput();
@@ -247,37 +273,33 @@ void talk_with_server(int fd) {
         switch (type) {
             case LOGOUT:
                 prompt(LOGOUT);
-                //logout();
+                quit = logoutS(dup(fd));
             break;
 
             case SAVE:
                 prompt(SAVE);
-                save(fd);
+                save(dup(fd));
             break;
 
             case LOAD:
                 prompt(LOAD);
-                load(fd);
+                load(dup(fd));
             break;
 
             case LS:
                 prompt(LS);
-                ls(fd);
+                ls(dup(fd));
             break;
 
             case DELETE:
                 prompt(DELETE);
-                del(fd);
+                del(dup(fd));
             break;
 
             default:
                 break;
         }
     }
-    n = write(fd, buf, BUFSIZ);
-    write(1, buf, n);
-    n = read(fd, buf, BUFSIZ);
-    write(1, buf, n);
 }
 
 int main(int argc, char* argv[]) {

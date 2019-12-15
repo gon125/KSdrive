@@ -2,6 +2,10 @@
 #include "serverlib.h"
 #include <stdlib.h>
 #include <pthread.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <unistd.h>
 #define PORTNUM 13000
 #define HOSTLEN 256
 #define oops(msg) {perror(msg); exit(1);}
@@ -13,40 +17,65 @@ int server_bytes_sent;
 void* handle_call(void* fdptr);
 void setup(pthread_attr_t* attrp);
 
-void process_rq(int request, FILE* fin, int fd) {
-	FILE *fout;
+int process_rq(int fd) {
  	char id[100], pwd[100];	
+	FILE* fin;
+	FILE* fout;
+	int rq = -1;
 
-	fout = fdopen(fd, "w");
+	while(1){
+		fin = fdopen(dup(fd), "r");
+		fout = fdopen(dup(fd), "w");
 
-	printf("%d\n",request);
+		fscanf(fin, "%d",&rq);
 
-	switch(request){
-		case SIGNUP :
-			fscanf(fin, "%s %s",id, pwd);
-			
-			printf("%s %s\n",id ,pwd);
-			if(sign_up(id,pwd) == 0){
-				printf("return 0?\n");
-				fprintf(fout, "%d\n", 0); // sign up failed 같은 아이디 존재
-			}
-			else{
-				printf("return 1?\n");
-				fprintf(fout, "%d\n",1); // sign up success
-			}
-			break;
-		case LOGIN :
-			fscanf(fin, "%s %s",id, pwd);
-			printf("%s %s\n",id ,pwd);
-			if(log_in(id, pwd) == 0){
-				fprintf(fout, "%d\n", 0);
-			}
-			else{
+		printf("got a call on %d: request = %d\n",fd ,rq);
+		printf("%d\n",rq);
+
+		switch(rq){
+			case SIGNUP :
+				fscanf(fin, "%s %s",id, pwd);
+				
+				printf("%s %s\n",id ,pwd);
+				
+				if(sign_up(id,pwd) == 0){
+					fprintf(fout, "%d\n", 0); // sign up failed 같은 아이디 존재
+				}
+				else{
+					fprintf(fout, "%d\n",1); // sign up success
+				}
+				break;
+			case LOGIN :
+				/*
+				fscanf(fin, "%s %s",id, pwd);
+				printf("%s %s\n",id ,pwd);
+				if(log_in(id, pwd) == 0){
+					fprintf(fout, "%d\n", 0);
+				}
+				else{
+					fprintf(fout, "%d\n",1);
+				}
+				*/
+				fscanf(fin, "%s %s",id, pwd);
+				
+				printf("%s %s\n",id ,pwd);
 				fprintf(fout, "%d\n",1);
-			}
-			break;
+				fflush(fout);
+				break;
+			case LOGOUT :
+				fprintf(fout, "%d\n",1);
+				fclose(fout);
+				fclose(fin);
+				return 0;
+				break;
+			case LS:
+				break;
+		}
+
+		fclose(fout);
+		fclose(fin);
 	}
-	fclose(fout);
+	return 1;
 }
 
 int main(int argc, char* argv[]) {
@@ -85,20 +114,12 @@ void setup(pthread_attr_t* attrp)
 
 void* handle_call(void* fdptr)
 {
-	FILE* fpin;
-	int rq = 0;
 	int fd;
 	
 	fd = *(int*)fdptr;
 	free(fdptr);
 	
-	fpin = fdopen(fd, "r");
-	fscanf(fpin, "%d",&rq);
+	process_rq(fd);
 	
-	printf("got a call on %d: request = %d\n",fd ,rq);
-
-	process_rq(rq, fpin, fd);
-	fclose(fpin);
-
 	return NULL;
 }

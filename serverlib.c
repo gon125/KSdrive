@@ -84,7 +84,7 @@ int log_in(char *id, char *pswd){
     struct client_if client;
 	
 	if ((f=fopen(fname,"r"))==NULL){
-		printf("fopen err"); exit(0);
+		return 0;
 	}
 	while(!feof(f)){
 		if (1 != fread(&client,sizeof(struct client_if),1,f)) {

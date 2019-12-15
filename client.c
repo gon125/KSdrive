@@ -6,6 +6,7 @@
 #define oops(msg) {perror(msg);exit(1);}
 #define MAX_STRING 100
 
+int c;
 
 void prompt(int type) {
     
@@ -175,7 +176,11 @@ int signup(int fd) {
     
     fprintf(fout, "%d %s %s ", SIGNUP, id, pwd);
     fflush(fout);
-    fscanf(fin, "%d", &signUpSuccess);
+    
+    while(1) {
+        c = getc(fin);
+        if (c == '0' || c == '1') { signUpSuccess = c -'0'; break;}
+    }
     
     if (signUpSuccess) {
         printf("signUp Success\n");
@@ -209,7 +214,11 @@ int loginS(int fd) {
     
     fprintf(fout, "%d %s %s ", LOGIN, id, pwd);
     fflush(fout);
-    fscanf(fin, "%d", &loginSuccess);
+    
+    while(1) {
+         c = getc(fin);
+         if (c == '0' || c == '1') { loginSuccess = c -'0'; break;}
+     }
     
     if (loginSuccess) {
         printf("login Success\n");
@@ -240,7 +249,6 @@ void save(int fd) {
     if(fout!=NULL && file!=NULL){
         while((c=fgetc(file))!= EOF){
             fputc(c,fout);
-            fputc(c,stdout);
         }
         fprintf(fout, "\r\n");
         fflush(fout);
@@ -278,7 +286,11 @@ void load(int fd) {
     fprintf(fout, "%d %s ", LOAD, fileName);
     fflush(fout);
     
-    fscanf(fin, "%d", &fileExist);
+    while(1) {
+        c = getc(fin);
+        if (c == '0' || c == '1') { fileExist = c -'0'; break;}
+    }
+
     
     if (!fileExist) {
         printf("file not exist on server. : %s\n", fileName);
@@ -356,7 +368,11 @@ void del(int fd) {
     fprintf(fout, "%d %s ", DELETE, fileName);
     fflush(fout);
     
-    fscanf(fin, "%d", &deleteSuccess);
+    while(1) {
+        c = getc(fin);
+        if (c == '0' || c == '1') { deleteSuccess = c -'0'; break;}
+    }
+    
     
     if (deleteSuccess) {
         printf("delete Success\n");
@@ -378,7 +394,11 @@ int logoutS(int fd) {
     
     fprintf(fout, "%d ", LOGOUT);
     fflush(fout);
-    fscanf(fin, "%d", &logoutSuccess);
+    
+    while(1) {
+        c = getc(fin);
+        if (c == '0' || c == '1') { logoutSuccess = c -'0'; break;}
+    }
     
     if (logoutSuccess) {
         printf("logout Success\n");
